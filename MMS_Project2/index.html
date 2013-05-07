@@ -1,0 +1,277 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title> Trail 1 </title>
+	<style>
+		body {
+		}
+		img{
+		 position:absolute;
+		 color:white;
+		 }
+
+	</style>
+
+<script src="pixi.js"></script>
+<script src="../../src/pixi/renderers/WebGLRenderer.js"></script>
+</head>
+
+<body>
+<img id="pause" src="pause_sm.png" alt="some_text" onclick="Pause()">
+<img id="mute" src="mute_sm.png" alt="some_text" onclick="Mute()" style="margin-left:5%;">
+<img id="gameover" src="game-over.png" alt="some_text" onclick="gameover()" style="visibility:hidden;margin-left:25%;margin-top:10%;">
+<label id="score" title="0" style="margin-left:90%;position:absolute;color:red;font-size:46px;"></label>
+<label id="livesCount" title="3" style="margin-left:83%;position:absolute;color:blue;font-size:46px;"></label>
+<img id="lives" src="jet2_small2.png" style="margin-left:85%;position:absolute;" >
+<label id="level" title="level 1" style="margin-left:45%;position:absolute;color:red;font-size:46px;"></label>
+<audio id="audio" src="song.wav" preload="auto"> </audio>
+<script>
+           document.getElementById("audio").play();
+           document.getElementById("level").innerHTML ="Level 1";
+           document.getElementById("livesCount").innerHTML = 3;
+                                 document.getElementById("score").innerHTML =  0;
+var flag = 0;
+function Pause(){
+    if(flag == 0){
+            flag = 1;
+                        document.getElementById("audio").pause();
+    }                 else{
+                      flag = 0;
+                                  document.getElementById("audio").play();
+    }
+}
+
+var flag2=0;
+function Mute(){
+ if(flag2 == 0){
+            flag2 = 1;
+                       document.getElementById("audio").pause();
+    }                 else{
+                      flag2 = 0;
+                                 document.getElementById("audio").play();
+    }
+}
+
+
+
+ var lives=3;
+// create an new instance of a pixi stage
+var stage = new PIXI.Stage(0x66FF99,true);
+var mySprite = new PIXI.Sprite(PIXI.Texture.fromImage("sky3.jpg"));
+stage.addChild(mySprite);
+
+// create a renderer instance
+var renderer = PIXI.autoDetectRenderer(innerWidth, innerHeight, null);
+
+// add the renderer view element to the DOM
+document.body.appendChild(renderer.view);
+
+requestAnimFrame( animate );
+
+// create a texture from an image path
+var texture = PIXI.Texture.fromImage("jet2_small.png");
+// create a new Sprite using the texture
+var jet = new PIXI.Sprite(texture);
+
+// center the sprites anchor point
+jet.anchor.x = 0.5;
+jet.anchor.y = 0.5;
+
+// move the sprite to the center of the screen
+jet.position.x = innerWidth/2;
+jet.position.y = innerHeight*(5/6);
+
+jet.setInteractive(true);
+jet.mousemove= function (data)
+{
+if(flag == 0){
+jet.position.x= data.global.x;
+jet.position.y= data.global.y;
+}
+}
+
+stage.addChild(jet);
+
+
+
+          var Bullet = [];
+          PIXI.InteractionManager.prototype.onMouseDown = function(event)
+           {
+           if(flag == 0){
+                       var texture2 = PIXI.Texture.fromImage("Bullet_s.png");
+                	// create a new Sprite using the texture
+	                var bullet = new PIXI.Sprite(texture2);
+	                bullet.position.x = jet.position.x;
+	                bullet.position.y = jet.position.y-130;
+	                Bullet.push(bullet);
+	                stage.addChild(bullet);
+
+                        }
+
+           }
+
+
+          var aliens = [];
+          function addalien()
+           {
+           if(flag == 0){
+                       var texture3 = PIXI.Texture.fromImage("alien_small.png");
+                	// create a new Sprite using the texture
+	                var alien = new PIXI.Sprite(texture3);
+	                alien.position.x = Math.floor((Math.random())*renderer.width);
+	                alien.position.y = 0;
+	                aliens.push(alien);
+	                stage.addChild(alien);
+	                }
+
+
+           }
+           
+           var aliens2 = [];
+          function addalien2()
+           {
+           if(flag == 0){
+                       var texture4 = PIXI.Texture.fromImage("alien1.png");
+                	// create a new Sprite using the texture
+	                var alien2 = new PIXI.Sprite(texture4);
+	                alien2.position.x = Math.floor((Math.random())*renderer.width);
+	                alien2.position.y = 0;
+	                aliens2.push(alien2);
+	                stage.addChild(alien2);
+	                }
+
+
+           }
+
+
+           var collision_counts=0;
+           function collision()   // collision between bullets and enemies
+           {
+           for ( var i=0;i<Bullet.length;i++){
+           for ( var j=0;j<aliens.length;j++) {
+           if (detectcollision(Bullet[i],aliens[j])){
+           collision3_counts_SCORE = collision3_counts_SCORE +1;
+           document.getElementById("score").innerHTML =  collision3_counts_SCORE;
+             stage.removeChild(Bullet[i]);
+             stage.removeChild(aliens[j]);
+             collision_counts++;
+             Bullet.splice(i,1);
+             aliens.splice(j,1);
+           }
+           }
+           }
+           }
+
+           function detectcollision(a, b)    // detect collision between bullets and enemies
+        {
+         return a.position.x < b.position.x + b.width &&
+         a.position.x + a.width > b.position.x &&
+         a.position.y < b.position.y + b.height &&
+         a.position.y + a.height > b.position.y;
+        }
+        
+
+        var collision2_counts=0;
+       function collision2()  //collision between enemies and jet
+           {
+           for ( var j=0;j<aliens.length;j++) {
+           if (detectcollision(jet,aliens[j])){
+           stage.removeChild(aliens[j]);
+           collision2_counts++;
+           if(collision2_counts == 3){
+               lives = lives - 1;
+               collision2_counts = 0;
+               document.getElementById("livesCount").innerHTML = lives;
+             }
+           aliens.splice(j,1);
+           }
+           }
+           }
+
+        var collision3_counts_SCORE=0;
+       function collision3()  //collision between alien2 and jet
+           {
+           for ( var j=0;j<aliens2.length;j++) {
+           if (detectcollision(jet,aliens2[j])){
+           stage.removeChild(aliens2[j]);
+               lives = lives - 1;
+                document.getElementById("livesCount").innerHTML = lives;
+
+           aliens2.splice(j,1);
+           }
+           }
+           }
+
+function collision4()   // collision between bullets and aliens2
+           {
+           for ( var i=0;i<Bullet.length;i++){
+           for ( var j=0;j<aliens2.length;j++) {
+           if (detectcollision(Bullet[i],aliens2[j])){
+           collision3_counts_SCORE = collision3_counts_SCORE + 5;
+                      document.getElementById("score").innerHTML =  collision3_counts_SCORE;
+             stage.removeChild(Bullet[i]);
+             stage.removeChild(aliens2[j]);
+             collision_counts++;
+             Bullet.splice(i,1);
+             aliens2.splice(j,1);
+           }
+           }
+           }
+           }
+
+
+var alienInterval=900;
+setInterval(addalien,alienInterval);
+setInterval(addalien2,2000);
+
+function gameover(){
+flag =1;
+                       document.getElementById("audio").pause();
+document.getElementById("gameover").style.visibility="visible";
+stage.removeChild(jet);
+}
+
+function level2(){
+   window.location="index2.htm";
+}
+
+function score(){
+
+}
+
+function animate() {
+
+requestAnimFrame( animate );
+collision();
+collision2();
+collision3();
+collision4();
+if(flag == 0){
+for(var i =0;i < aliens.length;i++){
+       aliens[i].position.y += 1;
+ }
+
+ for(var i =0;i < Bullet.length;i++){
+       Bullet[i].position.y -= 10;
+ }
+
+  for(var i =0;i < aliens2.length;i++){
+       aliens2[i].position.y += 5;
+ }
+ }
+
+ if(lives==0){
+ gameover();
+
+ }
+
+ if (collision3_counts_SCORE >= 20){
+       level2();
+   }
+
+// render the stage
+renderer.render(stage);
+}
+</script>
+</body>
+</html>
